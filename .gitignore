@@ -1,0 +1,8 @@
+Datasets/author_df.csv
+Datasets/book_df_cleanPublisher.csv
+Datasets/giveaways_thesis.csv
+Datasets/reviews_thesis_notext.csv
+Datasets/reviews_thesis_text.csv
+Datasets/similar_map_thesis.csv
+Datasets/similar_meta_thesis.csv
+Datasets/review_giveaway_df.csv

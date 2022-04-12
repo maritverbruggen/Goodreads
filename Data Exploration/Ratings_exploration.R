@@ -7,6 +7,7 @@ library(tidyverse)
 library(scales)
 
 View(ratings)
+ratings <- read.csv("../Datasets/reviews_thesis_notext.csv")
 
 #check whether NAs included 
 sum(is.na(ratings$ratings))
@@ -87,8 +88,6 @@ min(ratings_month$summary_variable[2:172])
 max(ratings_month$summary_variable)
 sd(ratings_month$summary_variable[2:172])
 mean(ratings_month$summary_variable[2:172])
-
-gi
 
 
 

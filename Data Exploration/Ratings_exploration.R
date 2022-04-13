@@ -89,5 +89,5 @@ max(ratings_month$summary_variable)
 sd(ratings_month$summary_variable[2:172])
 mean(ratings_month$summary_variable[2:172])
 
-
+View(ratings_month)
 

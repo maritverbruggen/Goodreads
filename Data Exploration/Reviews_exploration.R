@@ -10,18 +10,23 @@ min(reviews$time)
 max(reviews$time)
 
 #delete all rows earlier than 2007
-reviews_text <- reviews_text[!(reviews_text$time <= "2007-01-01"),]
+reviews <- reviews[!(reviews$time <= "2007-01-01"),]
 
-#time range for ratings in rating file 
-ratings$time <- str_replace(ratings$time, ",","")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- as.Date(ratings$time, format="%b/%d/%Y")
-min(ratings$time) 
-max(ratings$time)
+#delete all reviews without text 
+reviews <- reviews[!(reviews$text == ""),]
+View(reviews)
 
-#delete all rows earlier than 2007 
-ratings <- ratings[!(reviews_text$time <= "2007-01-01"),]
+#create variable that counts words in text 
+reviews$word_count <- str_count(reviews$text, "\\w+")
 
+#how many reviews only contain characters 
+sum(reviews$word_count == 0)
+reviews <- reviews[!(reviews$word_count==0),]
 
+#descriptive statistics review length 
+mean(reviews$word_count)
+sd(reviews$word_count)
+min(reviews$word_count)
+max(reviews$word_count)
 
+#group reviews per month 

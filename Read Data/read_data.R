@@ -1,5 +1,5 @@
 library(haven)
-
+library(dplyr)
 rm(list=ls())
 
 book_info <- read.csv("../Datasets/book_df_cleanPublisher.csv")
@@ -13,3 +13,5 @@ similar_meta <- read.csv("../Datasets/similar_meta_thesis.csv")
 View(giveaways)
 View(similar_map)
 View(similar_meta)
+View(book_info)
+

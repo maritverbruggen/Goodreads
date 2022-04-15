@@ -8,3 +8,5 @@ Datasets/similar_meta_thesis.csv
 Datasets/review_giveaway_df.csv
 Estimation_samples/rating_giveaway_df.csv
 Estimation_samples/review_giveaway_df.csv
+Estimation_samples/similar_books.csv
+Estimation_samples/focal_books.csv

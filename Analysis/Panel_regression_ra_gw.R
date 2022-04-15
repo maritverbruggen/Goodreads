@@ -6,7 +6,7 @@ library(tidyverse)
 library(scales)
 
 rm(list=ls())
-ra_gw <- read.csv("../Datasets/review_giveaway_df.csv")
+ra_gw <- read.csv("../Estimation_samples/rating_giveaway_df.csv")
 View(ra_gw)
 
 ra_gw$time <- as.Date(ra_gw$time)

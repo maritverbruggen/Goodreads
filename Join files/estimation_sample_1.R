@@ -4,6 +4,7 @@ library(tidyr)
 library(dplyr)
 library(tidyverse)
 library(scales)
+library(data.table)
 
 ratings <- read.csv("../Datasets/reviews_thesis_notext.csv")
 giveaways <- read.csv("../Datasets/giveaways_thesis.csv")
@@ -33,6 +34,6 @@ ra_gw <- subset(ra_gw, select=c(book_id, new_review_id, ratings, time, giveaway_
 ra_gw$giveaway_after <- ifelse(ra_gw$time > ra_gw$giveaway_end_date, 1, 0)
 
 #save file 
-write.csv(ra_gw,"../Estimation_samples/rating_giveaway_df.csv", row.names = FALSE)
-
+ra_gw <- as.data.frame(ra_gw)
+fwrite(ra_gw, "../Estimation_samples/rating_giveaway_df.csv")
 

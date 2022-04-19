@@ -10,6 +10,8 @@ reviews$time <- as.Date(reviews$time)
 min(reviews$time)
 max(reviews$time)
 
+unique_df <- unique(reviews$book_id)
+length(unique_df)
 #delete all rows earlier than 2007
 sum(reviews$time <= "2007-01-01")
 reviews <- reviews[!(reviews$time <= "2007-01-01"),]

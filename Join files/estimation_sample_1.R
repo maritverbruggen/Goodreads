@@ -35,5 +35,10 @@ ra_gw$giveaway_after <- ifelse(ra_gw$time > ra_gw$giveaway_end_date, 1, 0)
 
 #save file 
 ra_gw <- as.data.frame(ra_gw)
+
+author <- read.csv("../Datasets/author_df.csv")
+author <- author %>% select(book_id, author_average_rating)
+ra_gw <- ra_gw %>% left_join(author, by="book_id")
+
 fwrite(ra_gw, "../Estimation_samples/rating_giveaway_df.csv")
 

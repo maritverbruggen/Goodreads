@@ -40,5 +40,22 @@ author <- read.csv("../Datasets/author_df.csv")
 author <- author %>% select(book_id, author_average_rating)
 ra_gw <- ra_gw %>% left_join(author, by="book_id")
 
+#how many ratings in giveaway set before and after giveaway
+sum(ra_gw$giveaway_after == "1")
+sum(ra_gw$giveaway_after == "0")
+
+#convert rating time and giveaway end date variable
+ra_gw$time <- as.Date(ra_gw$time)
+ra_gw$giveaway_end_date <- as.Date(ra_gw$giveaway_end_date)
+
+#divide rating time in year, month and day variables
+ra_gw$year <- format(ra_gw$time, format="%Y")
+ra_gw$month <- format(ra_gw$time, format="%Y-%m")
+ra_gw$day <- format(ra_gw$time, format="%Y-%m-%d")
+
+#add variable that indicates days since giveaway 
+ra_gw$days_since_gw <- ra_gw$time - ra_gw$giveaway_end_date
+
+#write file
 fwrite(ra_gw, "../Estimation_samples/rating_giveaway_df.csv")
 

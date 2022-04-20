@@ -50,7 +50,6 @@ book <- book %>% filter(focal_book_id %in% similar_ratings$focal_book_id)
 book_ratings <- book %>% left_join(ratings, by="focal_book_id")
 rm(book_info)
 
-
 #only select focal book id and similar book id to append to book set
 similar_append <- similar %>% select(focal_book_id, similar_book_id)
 
@@ -58,21 +57,16 @@ similar_append <- similar %>% select(focal_book_id, similar_book_id)
 book_complete <- similar_append %>% right_join(book_ratings, by="focal_book_id")
 View(book_complete)
 
-names(book_complete)
-names(similar_ratings)
-
-#join data sets! 
-est_3 <- rbind(book_complete,similar_ratings)
-
-
 giveaways <- read.csv("../Datasets/giveaways_thesis.csv")
 
-giveaways <- giveaways %>% filter(book_id %in% did$focal_book_id)
+giveaways <- giveaways %>% filter(book_id %in% book_ratings$focal_book_id)
 giveaways <- giveaways %>% select(focal_book_id = book_id, copy_n, request_n, giveaway_start_date, giveaway_end_date, listedby_book_n, listedby_friend_n)
 
 #add giveaway information to did estimation sample 
-est_3 <- est_3 %>% right_join(giveaways, by="focal_book_id")
+book_complete <- book_complete %>% right_join(giveaways, by="focal_book_id")
 
+#join data sets! 
+est_3 <- rbind(book_complete,similar_ratings)
 
 #save the data 
 fwrite(did, "../Estimation_samples/similar_book_ratings.csv")

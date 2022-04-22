@@ -17,3 +17,5 @@ Estimation_samples/did_book_similar_ratings.csv
 Datasets/book_df.csv
 Join files/.Rhistory
 Analysis/.Rhistory
+Datasets/ratings_df.csv
+Estimation_samples/est_3.csv

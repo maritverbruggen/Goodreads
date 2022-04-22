@@ -13,3 +13,5 @@ Estimation_samples/focal_books.csv
 Datasets/similar_rev_thesis.gz
 Estimation_samples/similar_book_ratings.csv
 Datasets/similar_review.csv
+Estimation_samples/did_book_similar_ratings.csv
+Datasets/book_df.csv

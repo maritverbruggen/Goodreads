@@ -4,27 +4,22 @@ library(tidyr)
 library(dplyr)
 library(tidyverse)
 
+rm(list=ls())
 #time range for reviews in review file 
-reviews <- read.csv("../Datasets/reviews_thesis_text.csv")
+reviews <- read.csv("../Datasets/reviews_df.csv")
+
 reviews$time <- as.Date(reviews$time)
 min(reviews$time)
 max(reviews$time)
 
 unique_df <- unique(reviews$book_id)
 length(unique_df)
-#delete all rows earlier than 2007
-sum(reviews$time <= "2007-01-01")
-reviews <- reviews[!(reviews$time <= "2007-01-01"),]
-
-#delete all reviews without text 
-reviews <- reviews[!(reviews$text == ""),]
-View(reviews)
 
 #create variable that counts words in text 
 reviews$word_count <- str_count(reviews$text, "\\w+")
 
 #how many reviews only contain characters 
-sum(reviews$word_count == 0)
+sum(reviews$word_count == "0")
 reviews <- reviews[!(reviews$word_count==0),]
 
 #descriptive statistics review length 
@@ -33,8 +28,26 @@ sd(reviews$word_count)
 min(reviews$word_count)
 max(reviews$word_count)
 
+reviews$month <- format(reviews$time, "%m-%Y")
+reviews_month <- reviews %>% group_by(month) %>% count()
+mean(reviews_month$n)
+sd(reviews_month$n)
+min(reviews_month$n)
+max(reviews_month$n)
 
+View(reviews_month)
+reviews_month <- reviews_month %>% filter(month != "01-2007")
 #group reviews per month 
+
+reviews_filter <- reviews %>% filter(time >= "2015-01-01")
+
+ggplot(reviews_filter, aes(x=lubridate::floor_date(time, "month"))) +
+  geom_bar()+ 
+  xlab("Review Date grouped by Month") + 
+  ylab("Number of Reviews")
+
+
+
 
 #create review counter 
 reviews$review_counter <- 1

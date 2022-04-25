@@ -5,10 +5,16 @@ library(dplyr)
 library(tidyverse)
 library(scales)
 
+
+rm(list=ls())
+memory.limit(size=1000000)
+
 #read data
-giveaways <- read.csv("../Datasets/giveaways_thesis.csv")
+giveaways <- read.csv("../Datasets/giveaways_df.csv")
 #view data
 View(giveaways)
+
+names(giveaways)
 
 #check min and max giveaway end date 
 giveaways$giveaway_end_date <- as.Date(giveaways$giveaway_end_date)
@@ -22,32 +28,30 @@ length(df_uniq)
 sum(is.na(giveaways$giveaway_start_date))
 
 #calculate mean amount of copies in a giveaway
-table(giveaways$copy_n) %>% 
-  as.data.frame() %>% 
-  arrange(desc(Freq))
-mean(giveaways$copy_n)
-max(giveaways$copy_n)
-min(giveaways$copy_n)
-sd(giveaways$copy_n)
-#amount of giveaways over time 
-giveaways$giveaways_counter <- 1
-giveaways$giveaways_counter <- as.numeric(giveaways$giveaways_counter)
+giveaways$month <- format(giveaways$giveaway_end_date, "%m-%Y")
+head(giveaways)
+giveaways$month <- as.Date(giveaways$month, "%m-%Y")
+head(giveaways)
 
-#group by month 
+gw_graph <- giveaways %>% group_by(month) %>% count()
+mean(gw_graph$n)
+View(gw_graph)
 
-giveaways_month <- giveaways %>% 
-  group_by(month = lubridate::floor_date(giveaway_end_date, "month")) %>%
-  summarize(summary_variable = sum(giveaways_counter))
-giveaways_month <- giveaways_month[1:34,]
+gw_graph <- gw_graph %>% filter(month != "01-2018")
+gw_graph <- gw_graph %>% filter(month != "11-2020")
 
-#average amount of giveaways per month 
-ggplot(giveaways_month, aes(x=month, y=summary_variable)) + geom_line() +
-  scale_x_date(date_breaks = "1 year",
-               labels=date_format("%Y"),
-               limits = as.Date(c('2017-01-01','2020-10-01'))) + 
-  ylab("Amount of Giveaways per Month") + xlab("Year") + 
-  geom_hline(yintercept=mean(giveaways_month$summary_variable), linetype="dashed", color = "red") +
-  ylim(0, 2500)
+mean(gw_graph$n)
+sd(gw_graph$n)
+min(gw_graph$n)
+max(gw_graph$n)
+
+ggplot(gw_graph, aes(x=month, y=n, group=1)) + geom_line()
+
+ggplot(giveaways, aes(x=lubridate::floor_date(giveaway_end_date, "month"))) +
+  geom_bar()+ 
+  xlab("Giveaway End Date grouped by Month") + 
+  ylab("Number of Giveaways") + 
+  geom_hline(yintercept = 814.2857,color="red")
 
 
 #cumulative giveaways grouped by month 

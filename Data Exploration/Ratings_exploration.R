@@ -6,8 +6,10 @@ library(dplyr)
 library(tidyverse)
 library(scales)
 
-View(ratings)
-ratings <- read.csv("../Datasets/reviews_thesis_notext.csv")
+rm(list=ls())
+memory.limit(size=1000000)
+
+ratings <- read.csv("../Datasets/ratings_df.csv")
 
 #check whether NAs included 
 sum(is.na(ratings$ratings))
@@ -16,53 +18,41 @@ sum(is.na(ratings$review_id))
 sum(is.na(ratings$new_review_id))
 
 #distribution of ratings
-table(ratings$ratings)
+tabel <- table(ratings$ratings)
+total <- tabel[1] + tabel[2] + tabel[3] + tabel[4] + tabel[5]
+tabel[5]/total*100
 
 #min and max rating
 min(ratings$ratings)
 max(ratings$ratings)
-
-#transform time variable 
-ratings$time <- str_replace(ratings$time, ",","")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- as.Date(ratings$time, format="%b/%d/%Y")
-
-#show min and max time 
-min(ratings$time)
-max(ratings$time)
-
-#remove ratings before 2007 
-sum(ratings$time < as.Date("2007-01-01"))
-ratings <- ratings[order(ratings$time),]
-ratings <- subset(ratings, time >= as.Date("2007-01-01"))
-
-
-#plot distribution of ratings
-ggplot(ratings, aes(x = ratings)) +
-  geom_bar() + 
-  xlab("Rating Score") + ylab("Number of Ratings") +
-  geom_text(stat="count", aes(label=..count..), vjust=0) +
-  geom_text(stat="count", aes(label = scales::percent((..count..)/sum(..count..))),
-            color="white", vjust=5)+ 
-  theme_minimal()
-
-
-#average rating over time 
 mean(ratings$ratings)
 sd(ratings$ratings)
 
-mean(ratings$time)
-sd(ratings$time)
+#show min and max time 
+ratings$time <- as.Date(ratings$time)
+min(ratings$time)
+max(ratings$time)
 
-#cumulative amount of ratings over time 
+ratings$month <- format(ratings$time, "%m-%Y")
 
-#create new column to be able to perform cumsum for amount of ratings
-ratings$ratings_counter <- ifelse(is.na(ratings$ratings)==FALSE, 1, 0)
-View(ratings)
+ratings_group <- ratings %>% group_by(month) %>% count()
+View(ratings_group)
+ratings_group <- ratings_group %>% filter(month != "05-2021")
+mean(ratings_group$n)
+sd(ratings_group$n)
+min(ratings_group$n)
+max(ratings_group$n)
 
-#put ratings in order of time 
-ratings <- ratings[order(ratings$time),]
+ratings_filter <- ratings %>% filter(time >= '2015-01-01')
+
+#amount of ratings per month over time 
+ggplot(ratings_filter, aes(x=lubridate::floor_date(time, "month"))) +
+  geom_bar()+ 
+  xlab("Rating Date grouped by Month") + 
+  ylab("Number of Ratings")
+
+geom_hline(yintercept = 814.2857,color="red")
+
 
 #create cumsum variable that adds ratings
 ratings$cumsum <- cumsum(ratings$ratings_counter)

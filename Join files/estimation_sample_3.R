@@ -11,45 +11,42 @@ memory.limit(size=1000000)
 memory.limit()
 
 
-similar_map <- read.csv("../Datasets/similar_map_thesis.csv")
-similar_meta <- read.csv("../Datasets/similar_meta_thesis.csv")
-
-#delete more than 1 similar books in similar map file 
-similar_map <-similar_map[!duplicated(similar_map$focal_book_id), ] 
 
 #join similar_map and similar_meta 
-similar <- similar_map %>% inner_join(similar_meta, by="similar_book_id")
-
+similar <- read.csv("../Datasets/similar_info.csv")
+  
 #make sure books only appear once 
 similar <- similar %>% distinct()
+rm(similar_map)
+rm(similar_meta)
+names(similar)
 
-#delete variables not used in further analysis
-similar <- similar %>% select(focal_book_id, similar_book_id, title=title.x, reviews, rating, average.rating, publication_date)
 similar$treated <- "0"
 
 #add similar_ratings file 
-similar_review <- read.csv("../Datasets/similar_review.csv")
+similar_review <- read.csv("../Datasets/similar_ratings_df.csv")
 similar_review <- similar_review %>% filter(similar_book_id %in% similar$similar_book_id)
-similar_ratings <- similar %>% left_join(similar_review, by="similar_book_id")
-
-rm(similar)
-rm(similar_review)
-
+similar_ratings <- similar %>% inner_join(similar_review, by="similar_book_id")
 
 similar_ratings <- similar_ratings %>% select(focal_book_id=focal_book_id.x, similar_book_id, title=title.x, reviews, rating, average.rating, publication_date, treated, new_review_id, ratings, time)
+df_uniq <- unique(similar_ratings$similar_book_id)
+length(df_uniq)
 
 #create subset of book_info data set
 book_info <- read.csv("../Datasets/book_df.csv")
+names(book_info)
 book <- book_info %>% select(focal_book_id=id, title, reviews=text_reviews_count, rating=ratings_count, average.rating=average_rating, publication_date=book_publication_date)
 book$treated <- "1"
 book <- book %>% filter(focal_book_id %in% similar_ratings$focal_book_id)
 
-ratings <- read.csv("../Datasets/reviews_thesis_notext.csv")
+
+ratings <- read.csv("../Datasets/ratings_df.csv")
 ratings <- ratings %>% select(focal_book_id=book_id, new_review_id, ratings, time)
+ratings<- ratings %>% filter(focal_book_id %in% book$focal_book_id)
 
 
 #join ratings to book data set 
-book_ratings <- book %>% left_join(ratings, by="focal_book_id")
+book_ratings <- book %>% inner_join(ratings, by="focal_book_id")
 rm(book)
 rm(ratings)
 
@@ -58,25 +55,41 @@ similar_append <- similar %>% select(focal_book_id, similar_book_id)
 rm(similar)
 
 #join similar_book_id to book set 
-book_complete <- similar_append %>% right_join(book_ratings, by="focal_book_id")
-rm(book_ratings)
-rm(similar_append)
+book_complete <- similar_append %>% inner_join(book_ratings, by="focal_book_id")
+head(book_complete)
 
 #check correctness of columns 
 names(book_complete)
 names(similar_ratings)
 book_similar_rating <- rbind(book_complete,similar_ratings)
+rm(similar_append)
+rm(ratings_filter)
 
 #add giveaway information to did estimation sample 
-giveaways <- read.csv("../Datasets/giveaways_thesis.csv")
+giveaways <- read.csv("../Datasets/giveaways_df.csv")
 giveaways <- giveaways %>% filter(book_id %in% book_similar_rating$focal_book_id)
-giveaways <- giveaways %>% select(focal_book_id = book_id, copy_n, request_n, giveaway_start_date, giveaway_end_date, listedby_book_n, listedby_friend_n)
+names(giveaways)
+book_similar_rating_giveaway <- book_similar_rating %>% inner_join(giveaways, by=c("focal_book_id"="book_id"))
+head(book_similar_rating_giveaway)
 
-book_similar_rating_giveaway <- book_similar_rating %>% left_join(giveaways, by="focal_book_id")
-rm(giveaways)
-rm(book_similar_rating)
-rm(book_total)
+#add post variable 
+book_similar_rating_giveaway$post <- ifelse(book_similar_rating_giveaway$time > book_similar_rating_giveaway$giveaway_end_date, 1,0)
+sum(book_similar_rating_giveaway$post == "1")
+sum(book_similar_rating_giveaway$post == "0")
 
+sum(book_similar_rating_giveaway$treated == "1" & book_similar_rating_giveaway$post == "0")
 
 #save the data 
-fwrite(book_similar_rating_giveaway, "../Estimation_samples/did_book_similar_ratings.csv")
+fwrite(book_similar_rating_giveaway, "../Estimation_samples/est_3.csv")
+
+
+
+#descriptive statistics 
+did_treat <- book_similar_rating_giveaway %>% filter(treated == "1")
+did_nontreat <- book_similar_rating_giveaway %>% filter(treated == "0")
+
+mean(did_treat$ratings)
+sd(did_treat$ratings)
+
+mean(did_nontreat$ratings)
+sd(did_nontreat$ratings)

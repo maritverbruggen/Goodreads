@@ -6,55 +6,53 @@ library(tidyverse)
 library(scales)
 library(data.table)
 
-ratings <- read.csv("../Datasets/reviews_thesis_notext.csv")
-giveaways <- read.csv("../Datasets/giveaways_thesis.csv")
-View(ratings)
-View(giveaways)
 
-#transform time variable in ratings data set
-ratings$time <- str_replace(ratings$time, ",","")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- str_replace(ratings$time, " ", "/")
-ratings$time <- as.Date(ratings$time, format="%b/%d/%Y")
+rm(list=ls())
+memory.limit(size=1000000)
 
-#remove ratings before 2007 
-sum(ratings$time < as.Date("2007-01-01"))
-ratings <- ratings[order(ratings$time),]
-ratings <- subset(ratings, time >= as.Date("2007-01-01"))
+ratings <- read.csv("../Datasets/ratings_df.csv")
+giveaways <- read.csv("../Datasets/giveaways_df.csv")
+head(ratings)
+
+ratings$time <- as.Date(ratings$time)
+min(ratings$time)
+head(giveaways)
 
 
 #merge ratings data set with giveaways data set 
 ra_gw <- ratings %>% inner_join(giveaways, by="book_id")
-View(ra_gw)
+df_uniq <- unique(ratings$book_id)
+length(df_uniq)
 
-#delete variables not of use in analysis 
-ra_gw <- subset(ra_gw, select=c(book_id, new_review_id, ratings, time, giveaway_id, book_title, release_date, copy_n, request_n, giveaway_start_date, giveaway_end_date, listedby_name, listedby_book_n, listedby_friend_n))
+head(ra_gw)
+
+ra_gw$giveaway_end_date <- as.Date(ra_gw$giveaway_end_date)
 
 #ratings before or after giveaway dummy variable 
 ra_gw$giveaway_after <- ifelse(ra_gw$time > ra_gw$giveaway_end_date, 1, 0)
 
-#save file 
-ra_gw <- as.data.frame(ra_gw)
+#divide rating time in month variable
+ra_gw$month <- format(ra_gw$time, format="%m")
+table(ra_gw$giveaway_after)
 
-author <- read.csv("../Datasets/author_df.csv")
-author <- author %>% select(book_id, author_average_rating)
-ra_gw <- ra_gw %>% left_join(author, by="book_id")
+#add variable that indicates days since publication 
+ra_gw$release_date <- as.Date(ra_gw$release_date)
+ra_gw$days_since_publication <- ra_gw$time - ra_gw$release_date
+ra_gw$days_since_publication <- str_replace(ra_gw$days_since_publication, " days", "")
+ra_gw$days_since_publication <- as.numeric(ra_gw$days_since_publication)
 
-#how many ratings in giveaway set before and after giveaway
-sum(ra_gw$giveaway_after == "1")
-sum(ra_gw$giveaway_after == "0")
+ra_gw_pre <- ra_gw %>% filter(giveaway_after =="0")
+mean(ra_gw_pre$days_since_publication)
+sd(ra_gw_pre$days_since_publication)
+min(ra_gw_pre$days_since_publication)
+max(ra_gw_pre$days_since_publication)
 
-#convert rating time and giveaway end date variable
-ra_gw$time <- as.Date(ra_gw$time)
-ra_gw$giveaway_end_date <- as.Date(ra_gw$giveaway_end_date)
+ra_gw_post <- ra_gw %>% filter(giveaway_after == "1")
+mean(ra_gw_post$days_since_publication)
+sd(ra_gw_post$days_since_publication)
+min(ra_gw_post$days_since_publication)
+max(ra_gw_post$days_since_publication)
 
-#divide rating time in year, month and day variables
-ra_gw$year <- format(ra_gw$time, format="%Y")
-ra_gw$month <- format(ra_gw$time, format="%Y-%m")
-ra_gw$day <- format(ra_gw$time, format="%Y-%m-%d")
-
-#add variable that indicates days since giveaway 
-ra_gw$days_since_gw <- ra_gw$time - ra_gw$giveaway_end_date
 
 #write file
 fwrite(ra_gw, "../Estimation_samples/rating_giveaway_df.csv")

@@ -1,17 +1,16 @@
 library(dplyr)
 library(tidyverse)
 
-#read reviews file 
-reviews <- read.csv("../Datasets/reviews_thesis_text.csv")
+rm(list=ls())
+memory.limit(size=1000000)
 
-#delete reviews without text 
-reviews <- subset(reviews, reviews$text != "")
+#read reviews file 
+reviews <- read.csv("../Datasets/reviews_df.csv")
+giveaways <- read.csv("../Datasets/giveaways_df.csv")
 
 #transform time variable in reviews data set
 reviews$time <- as.Date(reviews$time)
-
-#delete all reviews before 01-01-2007
-reviews <- subset(reviews, reviews$time >= "2007-01-01")
+min(reviews$time)
 
 #review texts for how many unique books? 
 df_uniq <- unique(reviews$book_id)
@@ -20,13 +19,28 @@ length(df_uniq)
 #merge files 
 re_gw <- reviews %>% inner_join(giveaways, by="book_id")
 
-#delete variables not used for analysis 
-re_gw <- subset(re_gw, select=c(book_id, ratings, time, text, giveaway_id, book_title, release_date, copy_n, request_n, giveaway_start_date, giveaway_end_date, listedby_name, listedby_book_n, listedby_friend_n))
 
 #create dummy variable for whether review was posted before or after giveaway 
-re_gw$giveaway_after <- ifelse(re_gw$time > re_gw$giveaway_end_date, 1, 0)
+re_gw$giveaway_end_date <- as.Date(re_gw$giveaway_end_date)
+re_gw$release_date <- as.Date(re_gw$release_date)
 
-#save file 
-re_gw <- as.data.frame(re_gw)
+re_gw$giveaway_after <- ifelse(re_gw$time > re_gw$giveaway_end_date, 1, 0)
+re_gw$days_since_publication <- re_gw$time - re_gw$release_date
+re_gw$days_since_publication <- str_replace(re_gw$days_since_publication, " days", "")
+
+re_gw$days_since_publication <- as.numeric(re_gw$days_since_publication)
+
+re_gw_pre <- re_gw %>% filter(giveaway_after == "0")
+mean(re_gw_pre$days_since_publication)
+sd(re_gw_pre$days_since_publication)
+min(re_gw_pre$days_since_publication)
+max(re_gw_pre$days_since_publication)
+
+re_gw_post <- re_gw %>% filter(giveaway_after == "1")
+mean(re_gw_post$days_since_publication)
+sd(re_gw_pre$days_since_publication)
+min(re_gw_pre$days_since_publication)
+max(re_gw_pre$days_since_publication)
+
 fwrite(re_gw, "../Estimation_samples/review_giveaway_df.csv")
 

@@ -3,21 +3,29 @@ library(dplyr)
 library(tidyr)     
 library(tidygraph) 
 library(ggraph)
+library(data.table)
+library(plm)
+library(fixest)
 
-rm(similar_map)
+memory.limit(size=1000000)
+rm(list=ls())
 
-did <- read.csv("../Estimation_samples/similar_book_ratings.csv")
-did <- did %>% arrange(focal_book_id)
-View(did)
+did <- read.csv("../Estimation_samples/est_3.csv")
 
-#correct time variable of review time 
-did$time <- as.Date(did$time, "%Y-%m-%d")
+did$time <- as.Date(did$time)
 
-#correct time variable for giveaway end date 
-did$giveaway_end_date <- as.Date(did$giveaway_end_date, "%Y-%m-%d")
+did$publication_date <- as.Date(did$publication_date)
 
-#add dummy for pre and post treatment group 
-did$post <- ifelse(did$time > did$giveaway_end_date, 1, 0)
+did$ratings <- as.numeric(did$ratings)
+did$days_since_publication <- as.numeric(did$days_since_publication)
+did$post <- as.factor(did$post)
+did$treated <- as.factor(did$treated)
 
-
-View(did)
+did <- did %>% filter(time >= "2015-01-01")
+names(did)
+gravity_subfe = list()
+all_FEs = c("focal_book_id", "month")
+for(i in 0:2){
+  gravity_subfe[[i+1]] = feols(ratings ~ post * treated, did, fixef = all_FEs[0:i])
+}
+etable(gravity_subfe, cluster = ~focal_book_id)

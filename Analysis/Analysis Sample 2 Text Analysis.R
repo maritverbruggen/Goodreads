@@ -56,7 +56,7 @@ sm_values$month <- format(sm_values$time, "%Y-%m")
 
 gravity_subfe = list()
 all_FEs = c("book_id", "month")
-
+cd 
 lm1 <- feols(value ~ ratings | book_id + month, sm_values)
 etable(lm1)
 for(i in 0:2){

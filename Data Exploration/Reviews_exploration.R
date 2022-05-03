@@ -22,6 +22,8 @@ reviews$word_count <- str_count(reviews$text, "\\w+")
 sum(reviews$word_count == "0")
 reviews <- reviews[!(reviews$word_count==0),]
 
+reviews <- reviews %>% filter(reviews$time >= "2015-01-01")
+
 #descriptive statistics review length 
 mean(reviews$word_count)
 sd(reviews$word_count)
@@ -36,15 +38,14 @@ min(reviews_month$n)
 max(reviews_month$n)
 
 View(reviews_month)
-reviews_month <- reviews_month %>% filter(month != "01-2007")
 #group reviews per month 
 
-reviews_filter <- reviews %>% filter(time >= "2015-01-01")
 
-ggplot(reviews_filter, aes(x=lubridate::floor_date(time, "month"))) +
+ggplot(reviews, aes(x=lubridate::floor_date(time, "month"))) +
   geom_bar()+ 
   xlab("Review Date grouped by Month") + 
-  ylab("Number of Reviews")
+  ylab("Number of Reviews") + 
+    
 
 
 

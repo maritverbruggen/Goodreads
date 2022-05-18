@@ -1,21 +1,7 @@
-Datasets/author_df.csv
-Datasets/book_df_cleanPublisher.csv
-Datasets/giveaways_thesis.csv
-Datasets/reviews_thesis_notext.csv
-Datasets/reviews_thesis_text.csv
-Datasets/similar_map_thesis.csv
-Datasets/similar_meta_thesis.csv
-Datasets/review_giveaway_df.csv
-Estimation_samples/rating_giveaway_df.csv
-Estimation_samples/review_giveaway_df.csv
-Estimation_samples/similar_books.csv
-Estimation_samples/focal_books.csv
-Datasets/similar_rev_thesis.gz
-Estimation_samples/similar_book_ratings.csv
-Datasets/similar_review.csv
-Estimation_samples/did_book_similar_ratings.csv
-Datasets/book_df.csv
+Datasets/
+Estimation_samples/
 Join files/.Rhistory
 Analysis/.Rhistory
-Datasets/ratings_df.csv
-Estimation_samples/est_3.csv
+Bin/
+Plots/
+Raw Datasets/

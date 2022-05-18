@@ -32,8 +32,6 @@ review_token <-
   unnest_tokens(word, text)
 
 #remove stop words 
-data(stop_words)
-
 df_no_stop <- review_token %>% 
   anti_join(stop_words)
 
@@ -58,10 +56,19 @@ gravity_subfe = list()
 all_FEs = c("book_id", "month")
 cd 
 lm1 <- feols(value ~ ratings | book_id + month, sm_values)
+View(sm_values)
+
 etable(lm1)
 for(i in 0:2){
   gravity_subfe[[i+1]] = feols(value ~ giveaway_after, sm_values, fixef = all_FEs[0:i])
 }
-etable(gravity_subfe, cluster = ~book_id)
+etable(lm1, cluster = ~book_id)
 
 
+lm1 <- feols(value ~ giveaway_after | book_id + month, sm_values)
+tab_model(lm1,
+          show.ci = FALSE, 
+          dv.labels = c("Fixed Effects Regression"),
+          pred.labels = c("Post Giveaway"),
+          title = "Effect of Giveaways on Review Sentiment", 
+          show.intercept = TRUE)

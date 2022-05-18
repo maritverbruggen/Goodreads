@@ -5,9 +5,11 @@ library(dplyr)
 library(tidyverse)
 
 rm(list=ls())
+memory.limit()
+
 #time range for reviews in review file 
 reviews <- read.csv("../Datasets/reviews_df.csv")
-
+head(reviews)
 reviews$time <- as.Date(reviews$time)
 min(reviews$time)
 max(reviews$time)
@@ -22,7 +24,6 @@ reviews$word_count <- str_count(reviews$text, "\\w+")
 sum(reviews$word_count == "0")
 reviews <- reviews[!(reviews$word_count==0),]
 
-reviews <- reviews %>% filter(reviews$time >= "2015-01-01")
 
 #descriptive statistics review length 
 mean(reviews$word_count)
@@ -30,7 +31,8 @@ sd(reviews$word_count)
 min(reviews$word_count)
 max(reviews$word_count)
 
-reviews$month <- format(reviews$time, "%m-%Y")
+
+reviews$month <- format(reviews$time, "%Y-%m")
 reviews_month <- reviews %>% group_by(month) %>% count()
 mean(reviews_month$n)
 sd(reviews_month$n)

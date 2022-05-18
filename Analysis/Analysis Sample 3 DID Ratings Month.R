@@ -11,44 +11,13 @@ library(stringr)
 rm(list=ls())
 memory.limit(size=1000000)
 
+#read data, estimation sample 3 
 did <- read.csv("../Estimation_samples/est_3.csv")
 
+#transform time variable to correct structure 
 did$time <- as.Date(did$time)
 did$giveaway_end_date <- as.Date(did$giveaway_end_date)
 did <- did %>% filter(time >= "2015-01-01")
-
-#create variable days since giveaway 
-did$days_since_gw <- did$time - did$giveaway_end_date 
-did$days_since_gw <- str_replace(did$days_since_gw, " days", "")
-did$days_since_gw <- as.numeric(did$days_since_gw)
-
-#filter for year before and year after 
-did_days <- did %>% filter(days_since_gw >= -360 & days_since_gw <= 360)
-
-#create bins of 30-day periods 
-did_days$bin <- cut_interval(did_days$days_since_gw, length=30)
-
-#reformat treated variable for graph 
-did_days$treated <- ifelse(did_days$treated == "0", "No", "Yes")
-
-#create table for plot 
-did_plot <- did_days %>% group_by(treated, bin) %>% count()
-
-ggplot(data=did_plot, aes(x=bin, y=n, group=treated, colour=treated))+
-  geom_line() + 
-  geom_vline(xintercept = "(-30,0]", 
-             color = "blue") +
-  theme(text = element_text(size=10),
-        axis.text.x = element_text(hjust=1, angle=90),
-        plot.title = element_text(hjust = 0.5)) +
-  xlab("Days Since End of Giveaway") +
-  ylab("Number of Ratings") + 
-  ggtitle("Number of Ratings per 30-days over time") + 
-  labs(color="Giveaway Book?")
-
-
-
-##prepare did estimation sample for regression 
 
 did$month <- format(did$time, "%Y-%m")
 did$gw_month <- format(did$giveaway_end_date, "%Y-%m")
@@ -56,12 +25,16 @@ did$gw_month <- format(did$giveaway_end_date, "%Y-%m")
 did_count <- did %>% count(focal_book_id, month, gw_month, treated, post)
 View(did_count)
 
+did_count$post <- ifelse(did_count$month > ratings_count$gw_month, "1", "0")
+did_count$post <- as.factor(did_count$post)
 
-gravity_subfe = list()
-all_FEs = c("focal_book_id", "month")
-for(i in 0:2){
-  gravity_subfe[[i+1]] = feols(n ~ post *treated , did_count, fixef = all_FEs[0:i])
-}
-etable(gravity_subfe, cluster = ~focal_book_id)
+m2 <- feols(n~ post * treated | focal_book_id + month, did_count)
 
-did 
+
+tab_model(m1,
+          m2, 
+          show.ci = FALSE, 
+          dv.labels = c("Fixed Effects Regression", "Diff-in-Diff"),
+          pred.labels = c("Post Giveaway", "Giveaway Effect", "Interaction Effect"),
+          title = "Effect of Giveaways on Number of Ratings", 
+          show.intercept = TRUE)
